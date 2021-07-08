@@ -8,6 +8,7 @@ const isLinux = process.platform === 'linux';
 const isWindows = process.platform === 'win32';
 
 let mainWindow;
+let aboutWindow;
 
 function createMainWindow () {
   mainWindow = new BrowserWindow({
@@ -22,19 +23,33 @@ function createMainWindow () {
   mainWindow.loadFile(`${__dirname}/app/index.html`);
 }
 
+function createAboutWindow () {
+  aboutWindow = new BrowserWindow({
+    title: 'About',
+    width: 300,
+    height: 200,
+    resizable: false,
+    icon: __dirname + '/assets/icons/Icon_256x256.png',
+  });
+
+  aboutWindow.loadFile(`${__dirname}/app/about.html`);
+}
+
+
 app.on('ready', () => {
   createMainWindow();
 
   const mainMenu = Menu.buildFromTemplate(menu);
   Menu.setApplicationMenu(mainMenu);
 
-  globalShortcut.register('CmdOrCtrl+R', () => (mainWindow.reload()));
-  if (isDev) {
-    globalShortcut.register('CmdOrCtrl+Shift+R', () => (mainWindow.webContents.reloadIgnoringCache()));
-    globalShortcut.register('CmdOrCtrl+Alt+R', () => (mainWindow.webContents.executeJavaScript('window.location.reload()')));
-    globalShortcut.register('CmdOrCtrl+Shift+S', () => (mainWindow.webContents.send('save-as'))); // Doesn't work
-    globalShortcut.register(isMac ? 'Command+Alt+I' : 'Ctrl+Shift+I', () => (mainWindow.toggleDevTools()));
-  }
+  // Global shortcuts moved to main menu
+  // globalShortcut.register('CmdOrCtrl+R', () => (mainWindow.reload()));
+  // if (isDev) {
+  //   globalShortcut.register('CmdOrCtrl+Shift+R', () => (mainWindow.webContents.reloadIgnoringCache()));
+  //   globalShortcut.register('CmdOrCtrl+Alt+R', () => (mainWindow.webContents.executeJavaScript('window.location.reload()')));
+  //   globalShortcut.register('CmdOrCtrl+Shift+S', () => (mainWindow.webContents.send('save-as'))); // Doesn't work
+  //   globalShortcut.register(isMac ? 'Command+Alt+I' : 'Ctrl+Shift+I', () => (mainWindow.toggleDevTools()));
+  // }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -42,17 +57,47 @@ app.on('ready', () => {
 });
 
 const menu = [
-  ...(isMac ? [{ role: 'appMenu'}] : []),
-  {
-    label: 'File',
+  // Set our own app 'About' menu for Mac
+  //...(isMac ? [{ role: 'appMenu'}] : []),
+  ...(isMac ? [{
+    label: app.name,
     submenu: [
-      {
-        label: 'Quit',
-        accelerator: 'CmdOrCtrl+Q',
-        click: () => app.quit(),
-      },
-    ],
+    {
+      label: 'About',
+      click: createAboutWindow,
+    }
+  ]}] : []),
+  // {
+  //   label: 'File',
+  //   submenu: [
+  //     {
+  //       label: 'Quit',
+  //       accelerator: 'CmdOrCtrl+Q',
+  //       click: () => app.quit(),
+  //     },
+  //   ],
+  // },
+  {
+    role: 'fileMenu',
   },
+  ...(!isMac ? [{
+    label: 'Help',
+    submenu: [{
+      label: 'About',
+      click: createAboutWindow,
+    }],
+  }] : []), // Help/About menu only on non-Mac
+  ...(isDev ? [
+    {
+      label: 'Developer',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forcereload' },
+        { type: 'separator' },
+        { role: 'toggledevtools' },
+      ],
+    }] : [] // Hide menu if not in dev mode
+  ),
 ];
 
 // if(isMac) {
