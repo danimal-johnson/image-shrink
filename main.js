@@ -4,7 +4,9 @@ const { app, BrowserWindow, Menu, globalShortcut, ipcMain } = require('electron'
 const imagemin = require('imagemin');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminPngquant = require('imagemin-pngquant');
-const slash = require('slash');
+// const slash = require('slash'); // FIXME: lack of this will cause Win32Error
+const log = require('electron-log');
+
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const isDev = process.env.NODE_ENV === 'development';
@@ -31,7 +33,6 @@ function createMainWindow () {
   if (isDev) {
     mainWindow.webContents.openDevTools();
   }
-
   // mainWindow.loadURL('file://' + __dirname + '/app/index.html');
   mainWindow.loadFile(`${__dirname}/app/index.html`);
 }
@@ -45,6 +46,7 @@ function createAboutWindow () {
     icon: __dirname + '/assets/icons/Icon_256x256.png',
   });
 
+  aboutWindow.removeMenu();
   aboutWindow.loadFile(`${__dirname}/app/about.html`);
 }
 
@@ -120,7 +122,6 @@ const menu = [
 
 ipcMain.on('image:minimize', (e, options) => {
   options.dest = path.join(os.homedir(), 'imageshrink');
-  console.log(options);
   shrinkImage(options);
 
 });
@@ -139,11 +140,14 @@ async function shrinkImage ({ imgPath, quality, dest }) {
       ],
     });
 
-    // shell.openPath(dest); // FIXME
-    mainWindow.webContents.send('image:done');
+    log.info(files[0].sourcePath + ' -> ' + files[0].destinationPath);
+
+    // shell.openPath(dest); // FIXME: opens destination folder
+    mainWindow.webContents.send('image:done'); // Notify user of success
 
   } catch (err) {
     console.error(err);
+    log.error(err);
   }
 }
 
