@@ -139,7 +139,8 @@ async function shrinkImage ({ imgPath, quality, dest }) {
       ],
     });
 
-    shell.openPath(dest);
+    // shell.openPath(dest); // FIXME
+    mainWindow.webContents.send('image:done');
 
   } catch (err) {
     console.error(err);

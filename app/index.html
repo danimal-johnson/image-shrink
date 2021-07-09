@@ -69,6 +69,13 @@
         quality
       });
     });
+
+    // On done
+    ipcRenderer.on('image:done', () => {
+      M.toast({ // Materialize Toast
+        html: `Image resized to ${slider.value}% quality.`,
+      });
+    });
   </script>
   <script src="js/materialize.min.js"></script>
 </body>
