@@ -1,7 +1,7 @@
-const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
+const { app, BrowserWindow, Menu, globalShortcut, ipcMain } = require('electron');
 
-// process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+// process.env.NODE_ENV = 'development';
 const isDev = process.env.NODE_ENV === 'development';
 const isMac = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -13,11 +13,19 @@ let aboutWindow;
 function createMainWindow () {
   mainWindow = new BrowserWindow({
     title: 'ImageShrink',
-    width: 500,
+    width: isDev ? 800 : 500,
     height: 600,
     resizable: isDev,
     icon: __dirname + '/assets/icons/Icon_256x256.png',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
   });
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // mainWindow.loadURL('file://' + __dirname + '/app/index.html');
   mainWindow.loadFile(`${__dirname}/app/index.html`);
@@ -56,6 +64,7 @@ app.on('ready', () => {
   });
 });
 
+// ----------------- Menu ------------------------
 const menu = [
   // Set our own app 'About' menu for Mac
   //...(isMac ? [{ role: 'appMenu'}] : []),
@@ -103,6 +112,12 @@ const menu = [
 // if(isMac) {
 //   menu.unshift({ role: 'appMenu' });
 // }
+
+ipcMain.on('image:minimize', (e, options) => {
+  console.log(options);
+});
+
+// ----------------- App Events ------------------------
 
 app.on('window-all-closed', () => {
   if (!isMac) {
