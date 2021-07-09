@@ -7,8 +7,9 @@ const imageminPngquant = require('imagemin-pngquant');
 // const slash = require('slash'); // FIXME: lack of this will cause Win32Error
 const log = require('electron-log');
 
+// process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+process.env.NODE_ENV = 'production';
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const isDev = process.env.NODE_ENV === 'development';
 const isMac = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
